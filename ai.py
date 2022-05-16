@@ -13,6 +13,9 @@ def minimax(board, color, depth):
     nodes = []
     legal_moves = get_legal_moves(board, color, True)
 
+    if len(legal_moves) == 0:
+        return evaluate(board)
+
     for move in legal_moves:
         temp_board = np.copy(board)
         make_move_commons(temp_board, move)
@@ -35,6 +38,9 @@ def minimax(board, color, depth):
 def get_best_move(board, color, depth):
     branches = []
     legal_moves = get_legal_moves(board, color, True)
+
+    if len(legal_moves) == 0:
+        return None
 
     for move in legal_moves:
         temp_board = np.copy(board)

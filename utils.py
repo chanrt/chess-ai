@@ -1,6 +1,22 @@
 import numpy as np
 
 from constants import consts as c
+from moves import get_legal_moves, get_king_pos
+
+
+def is_player_in_check(board, color):
+    enemy_color = "white" if color == "black" else "black"
+    enemy_legal_moves = get_legal_moves(board, enemy_color, True)
+
+    for move in enemy_legal_moves:
+        if move[1] == get_king_pos(board, color):
+            return True
+    return False
+
+
+def is_enemy_in_check(board, color):
+    enemy_color = "white" if color == "black" else "black"
+    return is_player_in_check(board, enemy_color)
 
 
 def make_move_commons(board, move):

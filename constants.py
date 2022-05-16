@@ -1,8 +1,11 @@
 import pygame as pg
+from load_data import get_resource_path
 
 
 class Constants:
     def __init__(self):
+        pg.init()
+
         self.depth = 3
         self.chance = "white"
         self.fps = 30
@@ -12,13 +15,21 @@ class Constants:
         self.move_coords_list = None
 
         self.init_colors()
+        self.init_sounds()
 
     def init_colors(self):
         self.bg_color = pg.Color(32, 32, 32)
         self.white_color = pg.Color(240, 217, 181)
         self.black_color = pg.Color(181, 136, 99)
         self.selected_color = pg.Color("#3e92cc")
-        self.move_color = pg.Color("blue")
+        self.move_color = pg.Color("#fca311")
+
+    def init_sounds(self):
+        self.move_sound = pg.mixer.Sound(get_resource_path("sounds/move.mp3"))
+        self.capture_sound = pg.mixer.Sound(get_resource_path("sounds/capture.mp3"))
+        self.check_sound = pg.mixer.Sound(get_resource_path("sounds/check.wav"))
+        self.checkmate_sound = pg.mixer.Sound(get_resource_path("sounds/checkmate.mp3"))
+        self.stalemate_sound = pg.mixer.Sound(get_resource_path("sounds/stalemate.wav"))
 
     def init_screen(self, screen):
         self.screen_width, self.screen_height = screen.get_size()
