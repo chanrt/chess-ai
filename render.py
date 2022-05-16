@@ -4,6 +4,14 @@ import pygame as pg
 from constants import consts as c
 
 
+def draw_everything(board, img, screen):
+    screen.fill(c.bg_color)
+    draw_background(screen)
+    draw_clicked(c.click_coords, c.chance, screen)
+    draw_board(board, img, c.chance, screen)
+    draw_move_coords(c.move_coords_list, c.chance, screen)
+
+
 def draw_background(screen):
     for row, col in product(range(8), range(8)):
         if (row + col) % 2 == 1:

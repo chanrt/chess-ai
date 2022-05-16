@@ -3,6 +3,11 @@ import numpy as np
 from constants import consts as c
 
 
+def make_move_commons(board, move):
+    board[move[1]] = board[move[0]]
+    board[move[0]] = 0
+
+
 def inside_board(mouse_pos):
     x, y = mouse_pos
     return c.board_x < x < c.board_x + c.board_length and c.board_y < y < c.board_y + c.board_length
