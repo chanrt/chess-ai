@@ -1,7 +1,5 @@
 from numba import njit
 
-from moves import get_legal_moves
-
 
 @njit(nogil=True)
 def in_center(row, col):
@@ -13,11 +11,11 @@ def evaluate(board):
     white_score = 0
     black_score = 0
 
-    pawn_material, pawn_center = 1, 1
-    knight_material, knight_center = 3, 3
-    bishop_material, bishop_center = 4, 3
-    rook_material, rook_center = 5, 3
-    queen_material, queen_center = 9, 6
+    pawn_material, pawn_center = 1, 0.7
+    knight_material, knight_center = 3, 0.6
+    bishop_material, bishop_center = 4, 0.8
+    rook_material, rook_center = 5, 0.8
+    queen_material, queen_center = 9, 1
 
     for row in range(8):
         for col in range(8):

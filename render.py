@@ -10,10 +10,14 @@ def draw_everything(board, img, screen):
     draw_clicked(c.click_coords, c.chance, screen)
     draw_board(board, img, c.chance, screen)
     draw_move_coords(c.move_coords_list, c.chance, screen)
+    draw_ai_move(c.ai_move, screen)
+    draw_targeted_squares(c.targeted_squares, screen)
 
     c.title_text.render()
     c.white_captured_pieces.render()
     c.black_captured_pieces.render()
+    c.restart_button.render()
+    c.quit_button.render()
 
 
 def draw_background(screen):
@@ -94,3 +98,23 @@ def draw_move_coords(move_coords_list, chance, screen):
             x = c.board_x + (act_col + 0.5) * c.square_length
             y = c.board_y + (act_row + 0.5) * c.square_length
             pg.draw.circle(screen, c.move_color, (x, y), c.move_radius)
+
+
+def draw_ai_move(moves, screen):
+    if moves is not None:
+        row, col = moves[0]
+        x = c.board_x + col * c.square_length
+        y = c.board_y + row * c.square_length
+        pg.draw.rect(screen, c.move_color, (x, y, c.square_length, c.square_length), 2)
+
+        row, col = moves[1]
+        x = c.board_x + col * c.square_length
+        y = c.board_y + row * c.square_length
+        pg.draw.rect(screen, c.move_color, (x, y, c.square_length, c.square_length), 2)
+
+def draw_targeted_squares(squares, screen):
+    if squares is not None:
+        for square in squares:
+            x = c.board_x + square[1] * c.square_length
+            y = c.board_y + square[0] * c.square_length
+            pg.draw.rect(screen, c.targeted_color, (x, y, c.square_length, c.square_length), 4)

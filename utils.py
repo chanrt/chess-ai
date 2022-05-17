@@ -4,6 +4,22 @@ from constants import consts as c
 from moves import get_legal_moves, get_king_pos
 
 
+def get_targeted_squares(board, color):
+    targeted_squares = []
+    player_multiplier = 1 if color == "white" else -1
+    enemy_color = "white" if color == "black" else "black"
+    enemy_moves = get_legal_moves(board, enemy_color, True)
+
+    for row in range(8):
+        for col in range(8):
+            if board[row][col] * player_multiplier > 0:
+                for move in enemy_moves:
+                    if move[1] == (row, col):
+                        targeted_squares.append((row, col))
+                        break
+    return targeted_squares
+
+
 def is_castling_move(board, move, color):
     row = 7 if color == "white" else 0
     multiplier = 1 if color == "white" else -1

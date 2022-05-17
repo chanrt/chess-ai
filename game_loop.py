@@ -2,19 +2,22 @@ import numpy as np
 import pygame as pg
 
 from ai import get_best_move
-from captured_piece import CapturedPieceManager
+from ui.button import Button
+from ui.captured_piece import CapturedPieceManager
 from constants import consts as c
 from images import Images
 from load_data import get_resource_path
 from moves import get_legal_moves
-from progress_bar import ProgressBar
+from ui.progress_bar import ProgressBar
 from render import draw_everything
-from sound_handler import *
-from text import Text
+from ui.sound_handler import *
+from ui.text import Text
 from utils import *
 
 
-def game_loop(screen):
+def game_loop(screen, player = "white"):
+    c.chance = "white"
+
     clock = pg.time.Clock()
     img = Images()
     board = init_board()
@@ -23,17 +26,26 @@ def game_loop(screen):
     c.white_captured_pieces = CapturedPieceManager(img, "white", screen)
     c.black_captured_pieces = CapturedPieceManager(img, "black", screen)
 
-    player = "white"
-    progress_bar = ProgressBar(c.progress_x, c.progress_y, c.progress_length, c.progress_thickness, screen)
-
-    font = pg.font.Font(get_resource_path("fonts/macondo.ttf"), c.font_size)
+    title_font = pg.font.Font(get_resource_path("fonts/macondo.ttf"), c.title_font_size)
+    button_font = pg.font.Font(get_resource_path("fonts/macondo.ttf"), c.button_font_size)
 
     c.title_text = Text(c.screen_width / 2, c.screen_height / 15, "Chess AI", screen)
-    c.title_text.set_font(font)
+    c.title_text.set_font(title_font)
+
+    c.restart_button = Button(c.screen_width / 4 - c.button_def, c.button_y, c.button_width, c.button_height, screen, "Restart")
+    c.restart_button.set_font(button_font)
+
+    c.quit_button = Button(3 * c.screen_width / 4 + c.button_def, c.button_y, c.button_width, c.button_height, screen, "Quit")
+    c.quit_button.set_font(button_font)
+
+    progress_bar = ProgressBar(c.progress_x, c.progress_y, c.progress_length, c.progress_thickness, screen)
 
     pg.mixer.music.load(get_resource_path("sounds/bg_music.mp3"))
     pg.mixer.music.set_volume(0.5)
     music_started = False
+
+    c.ai_move = None
+    c.targeted_squares = None
 
     if player == c.chance:
         legal_moves = get_legal_moves(board, c.chance, True)
@@ -52,7 +64,46 @@ def game_loop(screen):
                 pg.quit()
                 quit()
 
+            if event.type == pg.MOUSEMOTION:
+                mouse_pos = pg.mouse.get_pos()
+
+                c.restart_button.update(mouse_pos)
+                c.quit_button.update(mouse_pos)
+
             if event.type == pg.MOUSEBUTTONDOWN:
+                mouse_pos = pg.mouse.get_pos()
+                clicks = event.button
+
+                c.restart_button.check_clicked(mouse_pos, clicks)
+                c.quit_button.check_clicked(mouse_pos, clicks)
+
+                if c.restart_button.left_clicked:
+                    # restart game
+                    board = init_board()
+                    board_record = [np.copy(board)]
+
+                    c.chance = "white"
+                    c.reset_coords()
+                    c.ai_move = None
+                    c.targeted_squares = None
+                    c.white_captured_pieces.get_captured_pieces(board)
+                    c.black_captured_pieces.get_captured_pieces(board)
+
+                    pg.mixer.music.rewind()
+
+                    if player == c.chance:
+                        legal_moves = get_legal_moves(board, c.chance, True)
+                    else:
+                        best_move = get_best_move(board, c.chance, c.search_depth, progress_bar)
+                        make_move_commons(board, best_move)
+                        board_record.append(np.copy(board))
+                        c.next_turn()
+                        legal_moves = get_legal_moves(board, c.chance, True)
+
+                if c.quit_button.left_clicked:
+                    pg.mixer.music.stop()
+                    return
+
                 if inside_board(event.pos):
                     coords = get_click_coords(event.pos)
 
@@ -100,9 +151,11 @@ def game_loop(screen):
                                     exit_game()
                             else:
                                 # Finish AI turn
+                                c.ai_move = best_move
                                 play_move_sound(board, best_move[1])
                                 make_move_commons(board, best_move)
                                 check_promotions(board)
+                                c.targeted_squares = get_targeted_squares(board, player)
 
                                 c.white_captured_pieces.get_captured_pieces(board)
                                 c.black_captured_pieces.get_captured_pieces(board)
@@ -144,6 +197,13 @@ def game_loop(screen):
                 else:
                     c.reset_coords()
 
+            if event.type == pg.MOUSEBUTTONUP:
+                mouse_pos = pg.mouse.get_pos()
+                clicks = event.button
+
+                c.restart_button.check_released(mouse_pos, clicks)
+                c.quit_button.check_released(mouse_pos, clicks)
+
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
                     pg.quit()
@@ -152,10 +212,14 @@ def game_loop(screen):
                 if event.key == pg.K_r:
                     board = init_board()
                     board_record = [np.copy(board)]
+
+                    c.ai_move = None
                     c.chance = "white"
                     c.reset_coords()
                     c.white_captured_pieces.get_captured_pieces(board)
                     c.black_captured_pieces.get_captured_pieces(board)
+                    c.targeted_squares = None
+
                     pg.mixer.music.rewind()
 
                     if player == c.chance:
@@ -171,7 +235,8 @@ def game_loop(screen):
                     if len(board_record) > 2:
                         board_record.pop()
                         board_record.pop()
-                        board = board_record.pop()
+                        board = np.copy(board_record[-1])
+                        c.ai_move = None
                         c.white_captured_pieces.get_captured_pieces(board)
                         c.black_captured_pieces.get_captured_pieces(board)
                         c.reset_coords()
@@ -187,15 +252,15 @@ def game_loop(screen):
 
 
 def exit_game():
+    pg.mixer.music.stop()
     pg.time.delay(3000)
-    pg.quit()
-    quit()
+    return
 
 
 if __name__ == '__main__':
     pg.init()
     screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
-    pg.display.set_caption("Chess")
+    pg.display.set_caption("Chess AI")
     c.init_screen(screen)
 
     print("Compiling functions ...")
