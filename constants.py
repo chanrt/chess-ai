@@ -19,7 +19,7 @@ class Constants:
         self.init_ui()
 
     def init_colors(self):
-        self.bg_color = pg.Color("#3a0603")
+        self.bg_color = pg.Color("#003153")
         self.white_color = pg.Color(240, 217, 181)
         self.black_color = pg.Color(181, 136, 99)
         self.selected_color = pg.Color("#3e92cc")

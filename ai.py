@@ -60,7 +60,7 @@ def get_best_move(board, color, depth, progress_bar):
 
         print(f"Move #{i + 1} of {len(branches)}")
         print(branch)
-        print(f"Evaluation: {evaluation}\n")
+        print(f"Evaluation: {round(evaluation, 2)}\n")
 
     if color == "white":
         best_eval = max(evaluations)
@@ -71,7 +71,7 @@ def get_best_move(board, color, depth, progress_bar):
 
     print(f"Best move #{best_eval_index + 1}")
     print(branches[best_eval_index])
-    print(f"With evaluation: {best_eval} at search depth: {depth}\n")
+    print(f"With evaluation: {round(best_eval, 2)} at search depth: {depth}\n")
     print("=" * 20)
 
     return legal_moves[best_eval_index]

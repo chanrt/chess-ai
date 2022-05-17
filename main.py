@@ -65,7 +65,7 @@ def main_menu(screen):
                 depth_text.set_text("Search depth: " + str(get_search_depth(depth_slider)))
 
                 if white_button.left_clicked or black_button.left_clicked:
-                    c.depth = get_search_depth(depth_slider)
+                    c.search_depth = get_search_depth(depth_slider)
                     please_wait_text.display = True
                     please_wait_text.render()
                     pg.display.flip()
