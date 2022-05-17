@@ -14,11 +14,16 @@ class Constants:
         self.click_coords = None
         self.move_coords_list = None
 
+        self.title_text = None
+
+        self.white_captured_pieces = None
+        self.black_captured_pieces = None
+
         self.init_colors()
         self.init_sounds()
 
     def init_colors(self):
-        self.bg_color = pg.Color(32, 32, 32)
+        self.bg_color = pg.Color(64, 64, 64)
         self.white_color = pg.Color(240, 217, 181)
         self.black_color = pg.Color(181, 136, 99)
         self.selected_color = pg.Color("#3e92cc")
@@ -30,6 +35,7 @@ class Constants:
         self.check_sound = pg.mixer.Sound(get_resource_path("sounds/check.wav"))
         self.checkmate_sound = pg.mixer.Sound(get_resource_path("sounds/checkmate.mp3"))
         self.stalemate_sound = pg.mixer.Sound(get_resource_path("sounds/stalemate.wav"))
+        self.promote_sound = pg.mixer.Sound(get_resource_path("sounds/promote.wav"))
 
     def init_bar(self):
         self.progress_x = self.screen_width / 2
@@ -43,10 +49,14 @@ class Constants:
         self.square_length = int(self.board_length / 8)
         self.init_bar()
 
+        self.font_size = int(self.screen_height / 15)
         self.board_x = int((self.screen_width - self.board_length) / 2)
         self.board_y = int((self.screen_height - self.board_length) / 2)
 
         self.move_radius = int(self.square_length / 5)
+
+        self.piece_spacing_x = int((self.screen_width - self.board_length) / 6)
+        self.piece_spacing_y = int(self.screen_height / 8)
 
     def next_turn(self):
         if self.chance == "white":

@@ -26,10 +26,14 @@ def evaluate(board):
                 white_score += pawn_material
                 if 2 < row < 5 and 2 < col < 5:
                     white_score += pawn_center
+                elif row == 0:
+                    white_score += queen_material
             elif board[row][col] == -1:
                 black_score += pawn_material
                 if 2 < row < 5 and 2 < col < 5:
                     black_score += pawn_center
+                elif row == 7:
+                    black_score += queen_material
 
             # knight
             elif board[row][col] == 2:

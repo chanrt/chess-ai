@@ -2,6 +2,7 @@ import numpy as np
 import pygame as pg
 
 from ai import get_best_move
+from captured_piece import CapturedPieceManager
 from constants import consts as c
 from images import Images
 from load_data import get_resource_path
@@ -9,6 +10,7 @@ from moves import get_legal_moves
 from progress_bar import ProgressBar
 from render import draw_everything
 from sound_handler import *
+from text import Text
 from utils import *
 
 
@@ -18,8 +20,16 @@ def game_loop(screen):
     board = init_board()
     board_record = [np.copy(board)]
 
+    c.white_captured_pieces = CapturedPieceManager(img, "white", screen)
+    c.black_captured_pieces = CapturedPieceManager(img, "black", screen)
+
     player = "white"
     progress_bar = ProgressBar(c.progress_x, c.progress_y, c.progress_length, c.progress_thickness, screen)
+
+    font = pg.font.Font(get_resource_path("fonts/macondo.ttf"), c.font_size)
+
+    c.title_text = Text(c.screen_width / 2, c.screen_height / 15, "Chess AI", screen)
+    c.title_text.set_font(font)
 
     pg.mixer.music.load(get_resource_path("sounds/bg_music.mp3"))
     pg.mixer.music.set_volume(0.5)
@@ -28,7 +38,7 @@ def game_loop(screen):
     if player == c.chance:
         legal_moves = get_legal_moves(board, c.chance, True)
     else:
-        best_move = get_best_move(board, c.chance, c.depth)
+        best_move = get_best_move(board, c.chance, c.search_depth, progress_bar)
         make_move_commons(board, best_move)
         c.move_sound.play()
         board_record.append(np.copy(board))
@@ -41,6 +51,7 @@ def game_loop(screen):
             if event.type == pg.QUIT:
                 pg.quit()
                 quit()
+
             if event.type == pg.MOUSEBUTTONDOWN:
                 if inside_board(event.pos):
                     coords = get_click_coords(event.pos)
@@ -53,7 +64,22 @@ def game_loop(screen):
                             # Finish player's turn
                             play_move_sound(board, coords)
                             make_move_commons(board, [c.click_coords, coords])
+                            check_promotions(board)
+                        
+                            castling_status = is_castling_move(board, [c.click_coords, coords], player)
+                            if castling_status is not None:
+                                row = 7 if player == "white" else 0
+                                if castling_status == 1:
+                                    # kingside castling
+                                    make_move_commons(board, [(row, 7), (row, 5)])
+                                elif castling_status == 2:
+                                    # queenside castling
+                                    make_move_commons(board, [(row, 0), (row, 3)])
+
+                            c.white_captured_pieces.get_captured_pieces(board)
+                            c.black_captured_pieces.get_captured_pieces(board)
                             board_record.append(np.copy(board))
+
                             c.reset_coords()
                             draw_everything(board, img, screen)
                             pg.display.flip()
@@ -73,11 +99,22 @@ def game_loop(screen):
                                     play_stalemate_sound()
                                     exit_game()
                             else:
+                                # Finish AI turn
                                 play_move_sound(board, best_move[1])
                                 make_move_commons(board, best_move)
+                                check_promotions(board)
+
+                                c.white_captured_pieces.get_captured_pieces(board)
+                                c.black_captured_pieces.get_captured_pieces(board)
                                 board_record.append(np.copy(board))
+
+                                # Start player turn
                                 c.next_turn()
                                 legal_moves = get_legal_moves(board, c.chance, True)
+                                castling_moves = check_castling(board, board_record, player)
+
+                                if len(castling_moves) != 0:
+                                    legal_moves.extend(castling_moves)
 
                                 if is_player_in_check(board, player):
                                     play_check_sound()
@@ -106,7 +143,7 @@ def game_loop(screen):
 
                 else:
                     c.reset_coords()
-                    
+
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
                     pg.quit()
@@ -117,12 +154,14 @@ def game_loop(screen):
                     board_record = [np.copy(board)]
                     c.chance = "white"
                     c.reset_coords()
+                    c.white_captured_pieces.get_captured_pieces(board)
+                    c.black_captured_pieces.get_captured_pieces(board)
                     pg.mixer.music.rewind()
 
                     if player == c.chance:
                         legal_moves = get_legal_moves(board, c.chance, True)
                     else:
-                        best_move = get_best_move(board, c.chance, c.depth, progress_bar)
+                        best_move = get_best_move(board, c.chance, c.search_depth, progress_bar)
                         make_move_commons(board, best_move)
                         board_record.append(np.copy(board))
                         c.next_turn()
@@ -133,6 +172,8 @@ def game_loop(screen):
                         board_record.pop()
                         board_record.pop()
                         board = board_record.pop()
+                        c.white_captured_pieces.get_captured_pieces(board)
+                        c.black_captured_pieces.get_captured_pieces(board)
                         c.reset_coords()
                         legal_moves = get_legal_moves(board, c.chance, True)
 
@@ -141,7 +182,7 @@ def game_loop(screen):
         pg.display.flip()
 
         if not music_started:
-            pg.mixer.music.play()
+            pg.mixer.music.play(-1)
             music_started = True
 
 
@@ -153,7 +194,7 @@ def exit_game():
 
 if __name__ == '__main__':
     pg.init()
-    screen = pg.display.set_mode((800, 600))
+    screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
     pg.display.set_caption("Chess")
     c.init_screen(screen)
 

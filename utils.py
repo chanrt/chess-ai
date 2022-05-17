@@ -4,6 +4,87 @@ from constants import consts as c
 from moves import get_legal_moves, get_king_pos
 
 
+def is_castling_move(board, move, color):
+    row = 7 if color == "white" else 0
+    multiplier = 1 if color == "white" else -1
+
+    if move[0] == (row, 4) and board[move[1]] == 6 * multiplier:
+        if move[1] == (row, 6):
+            return 1
+        elif move[1] == (row, 2):
+            return 2
+    return None
+
+
+def check_castling(board, board_record, color):
+    castling_moves = []
+    row = 7 if color == "white" else 0
+    multiplier = 1 if color == "white" else -1
+
+    if (not any(board[row][5:7]) or not any(board[row][1:4])) and not is_player_in_check(board, color):
+        king_rook_moved = False
+        for every_board in board_record:
+            if every_board[row][7] != 4 * multiplier:
+                king_rook_moved = True
+                break
+
+        queen_rook_moved = False
+        for every_board in board_record:
+            if every_board[row][0] != 4 * multiplier:
+                queen_rook_moved = True
+                break
+
+        king_moved = False
+        for every_board in board_record:
+            if every_board[row][4] != 6 * multiplier:
+                king_moved = True
+                break
+
+        if not king_moved:
+            enemy_color = "white" if color == "black" else "black"
+            enemy_legal_moves = get_legal_moves(board, enemy_color, True)
+
+            if not king_rook_moved and not any(board[row][5:7]):
+                squares_to_check = [(row, 5), (row, 6)]
+
+                legal = True
+                for enemy_move in enemy_legal_moves:
+                    for square in squares_to_check:
+                        if square == enemy_move:
+                            legal = False
+                            break
+                
+                if legal == True:
+                    castling_moves.append([(row, 4), (row, 6)])
+
+            if not queen_rook_moved and not any(board[row][1:4]):
+                squares_to_check = [(row, 1), (row, 2), (row, 3)]
+
+                legal = True
+                for enemy_move in enemy_legal_moves:
+                    for square in squares_to_check:
+                        if square == enemy_move:
+                            legal = False
+                            break
+                
+                if legal == True:
+                    castling_moves.append([(row, 4), (row, 2)])
+
+    return castling_moves
+
+
+def check_promotions(board):
+    for col in range(8):
+        if board[0][col] == 1:
+            board[0][col] = 5
+            c.promote_sound.play()
+    
+    for col in range(8):
+        if board[0][col] == -1:
+            board[0][col] = -5
+            c.promote_sound.play()
+
+
 def is_player_in_check(board, color):
     enemy_color = "white" if color == "black" else "black"
     enemy_legal_moves = get_legal_moves(board, enemy_color, True)

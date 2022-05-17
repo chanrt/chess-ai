@@ -53,15 +53,15 @@ def get_best_move(board, color, depth, progress_bar):
 
     for i, branch in enumerate(branches):
         evaluation = minimax(branch, enemy_color, depth - 1)
+        evaluations.append(evaluation)
         progress_bar.set_progress((i + 1) / len(branches))
         progress_bar.render()
         pg.display.flip()
 
-        print(f"Move #{i + 1} of {len(branches)}")
-        print(branch)
-        print(f"Evaluation: {evaluation}\n")
-        evaluations.append(evaluation)
-    
+        # print(f"Move #{i + 1} of {len(branches)}")
+        # print(branch)
+        # print(f"Evaluation: {evaluation}\n")
+
     if color == "white":
         best_eval = max(evaluations)
     else:
@@ -69,9 +69,9 @@ def get_best_move(board, color, depth, progress_bar):
 
     best_eval_index = evaluations.index(best_eval)
 
-    print(f"Best move #{best_eval_index + 1}")
-    print(branches[best_eval_index])
-    print(f"With evaluation: {best_eval} at search depth: {depth}\n")
-    print("=" * 20)
+    # print(f"Best move #{best_eval_index + 1}")
+    # print(branches[best_eval_index])
+    # print(f"With evaluation: {best_eval} at search depth: {depth}\n")
+    # print("=" * 20)
 
     return legal_moves[best_eval_index]

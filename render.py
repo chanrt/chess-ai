@@ -11,6 +11,10 @@ def draw_everything(board, img, screen):
     draw_board(board, img, c.chance, screen)
     draw_move_coords(c.move_coords_list, c.chance, screen)
 
+    c.title_text.render()
+    c.white_captured_pieces.render()
+    c.black_captured_pieces.render()
+
 
 def draw_background(screen):
     for row, col in product(range(8), range(8)):
