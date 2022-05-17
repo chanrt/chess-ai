@@ -6,6 +6,7 @@ from constants import consts as c
 from images import Images
 from load_data import get_resource_path
 from moves import get_legal_moves
+from progress_bar import ProgressBar
 from render import draw_everything
 from sound_handler import *
 from utils import *
@@ -17,7 +18,8 @@ def game_loop(screen):
     board = init_board()
     board_record = [np.copy(board)]
 
-    player = "black"
+    player = "white"
+    progress_bar = ProgressBar(c.progress_x, c.progress_y, c.progress_length, c.progress_thickness, screen)
 
     pg.mixer.music.load(get_resource_path("sounds/bg_music.mp3"))
     pg.mixer.music.set_volume(0.5)
@@ -28,6 +30,7 @@ def game_loop(screen):
     else:
         best_move = get_best_move(board, c.chance, c.depth)
         make_move_commons(board, best_move)
+        c.move_sound.play()
         board_record.append(np.copy(board))
         c.next_turn()
         legal_moves = get_legal_moves(board, c.chance, True)
@@ -41,6 +44,7 @@ def game_loop(screen):
             if event.type == pg.MOUSEBUTTONDOWN:
                 if inside_board(event.pos):
                     coords = get_click_coords(event.pos)
+
                     if c.chance == "black":   
                         coords = (7 - coords[0], 7 - coords[1])
 
@@ -59,7 +63,7 @@ def game_loop(screen):
 
                             # Start AI turn
                             c.next_turn()
-                            best_move = get_best_move(board, c.chance, 3)
+                            best_move = get_best_move(board, c.chance, c.search_depth, progress_bar)
 
                             if best_move is None:
                                 if is_enemy_in_check(board, player):
@@ -87,9 +91,11 @@ def game_loop(screen):
                             
                         elif c.click_coords == coords:
                             c.reset_coords()
+
                         elif clicked_self(board, coords, c.chance):
                             c.click_coords = coords
                             c.move_coords_list = get_move_coords(coords, legal_moves)
+
                     else:
                         if clicked_self(board, coords, c.chance):
                             if c.click_coords == coords:
@@ -97,8 +103,10 @@ def game_loop(screen):
                             else:
                                 c.click_coords = coords
                                 c.move_coords_list = get_move_coords(c.click_coords, legal_moves)
+
                 else:
                     c.reset_coords()
+                    
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
                     pg.quit()
@@ -114,7 +122,7 @@ def game_loop(screen):
                     if player == c.chance:
                         legal_moves = get_legal_moves(board, c.chance, True)
                     else:
-                        best_move = get_best_move(board, c.chance, c.depth)
+                        best_move = get_best_move(board, c.chance, c.depth, progress_bar)
                         make_move_commons(board, best_move)
                         board_record.append(np.copy(board))
                         c.next_turn()

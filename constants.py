@@ -6,7 +6,7 @@ class Constants:
     def __init__(self):
         pg.init()
 
-        self.depth = 3
+        self.search_depth = 3
         self.chance = "white"
         self.fps = 30
         self.board_fraction = 0.7
@@ -22,7 +22,7 @@ class Constants:
         self.white_color = pg.Color(240, 217, 181)
         self.black_color = pg.Color(181, 136, 99)
         self.selected_color = pg.Color("#3e92cc")
-        self.move_color = pg.Color("#fca311")
+        self.move_color = pg.Color(64, 64, 64)
 
     def init_sounds(self):
         self.move_sound = pg.mixer.Sound(get_resource_path("sounds/move.mp3"))
@@ -31,10 +31,17 @@ class Constants:
         self.checkmate_sound = pg.mixer.Sound(get_resource_path("sounds/checkmate.mp3"))
         self.stalemate_sound = pg.mixer.Sound(get_resource_path("sounds/stalemate.wav"))
 
+    def init_bar(self):
+        self.progress_x = self.screen_width / 2
+        self.progress_y = 9 * self.screen_height / 10
+        self.progress_length = self.board_length
+        self.progress_thickness = self.screen_height / 30
+
     def init_screen(self, screen):
         self.screen_width, self.screen_height = screen.get_size()
         self.board_length = int(self.screen_height * self.board_fraction)
         self.square_length = int(self.board_length / 8)
+        self.init_bar()
 
         self.board_x = int((self.screen_width - self.board_length) / 2)
         self.board_y = int((self.screen_height - self.board_length) / 2)
