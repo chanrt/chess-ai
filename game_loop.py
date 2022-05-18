@@ -151,7 +151,10 @@ def game_loop(screen, player = "white"):
                                     exit_game()
                             else:
                                 # Finish AI turn
-                                c.ai_move = best_move
+                                if player == "white":
+                                    c.ai_move = best_move
+                                else:
+                                    c.ai_move = [(7 - best_move[0][0], 7 - best_move[0][1]), (7 - best_move[1][0], 7 - best_move[1][1])]
                                 play_move_sound(board, best_move[1])
                                 make_move_commons(board, best_move)
                                 check_promotions(board)

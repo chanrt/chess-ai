@@ -15,7 +15,10 @@ def get_targeted_squares(board, color):
             if board[row][col] * player_multiplier > 0:
                 for move in enemy_moves:
                     if move[1] == (row, col):
-                        targeted_squares.append((row, col))
+                        if color == "white":
+                            targeted_squares.append((row, col))
+                        else:
+                            targeted_squares.append((7 - row, 7 - col))
                         break
     return targeted_squares
 
